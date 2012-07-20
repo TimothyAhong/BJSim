@@ -1,6 +1,6 @@
 To Do
     -comment/read
-    
+
     -ability to specify full set of tables for each player
         -counting values
         -betting spreads/ramps
@@ -9,6 +9,7 @@ To Do
         -insurace
         -surrender
         -double down
+        -split
 
     -trial class
         -multi-threaded tests
