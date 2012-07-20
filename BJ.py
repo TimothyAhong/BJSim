@@ -94,14 +94,21 @@ class BlackjackGame:
             p.clearHands()
         self.dealer.clearHands()
 
-    def playRound(self, verbose=True):
+    def requiresShuffle(self):
         if self.dealer.getNumberCardsLeft() < self.deckpen*52*self.dealer.getNumberDecks():
-            if verbose:
-                print "Shuffling..."
-            self.dealer.shuffleDeck()
+            #if we are less than the preset deck penetration then reset counts
             for p in self.players:
                 p.resetCount()
-        wagers = {} #map player to their wager
+            return True
+        else:
+            return False
+
+    def playRound(self, verbose=True):
+        #map player to their wager (not implemented yet?)
+        #wagers = {} 
+        if verbose:
+            print "Number of cards left: " + str(self.dealer.getNumberCardsLeft())
+
         for p in self.players:
             wager = p.makeWager()
             if verbose:
@@ -112,14 +119,17 @@ class BlackjackGame:
             if verbose:
                 print p.getName() + "'s hand: " + str(p.getHand())
         dealerupcard = self.dealer.dealCard()
+
         if verbose:
             print "Dealer's upcard: " + str(dealerupcard)
         self.dealer.takeCard(dealerupcard)
         self.dealer.takeCard(self.dealer.dealCard())
+
         if dealerupcard[0] == 'A':
             if verbose:
                 print "Ace showing...insurance?"
             self.offerInsurance(verbose=verbose)
+            
         if self.dealer.isBlackjack(self.dealer.getHand()):
             if verbose:
                 print "Dealer has blackjack"

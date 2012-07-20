@@ -50,20 +50,20 @@ p.setStrategyByCount('M', basic)
 p.setStrategyByCount('H', basic)
 p.setStrategyByCount('VH', basic)
 
-game = BlackjackGame(6, 1.5, 0.75, [p])
+game = BlackjackGame(2, 1.5, 0.75, [p])
 
 outcomes = []
-episodes = 100
+episodes = 2
 
- 
- 
+
 for k in range(0, episodes):
+    print "Shuffle time..."
     game.dealer.shuffleDeck()
-    for i in range(0, 100):
-        game.playRound(False)
+    while (not game.requiresShuffle()):
+        game.playRound(True)
     outcomes.append(p.getBankroll())
-    #print str(p.getBankroll())
-    p.setBankroll(0)
+    print str(p.getBankroll())
+    #p.setBankroll(0)
     #if k % 10 == 0 and k > 0:  
         #print "Episode " + str(k)
 

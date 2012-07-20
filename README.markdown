@@ -4,6 +4,10 @@ Simulates BJs
 
 * comment
 
+* fatal error
+    * what will happen if the deck runs out of cards?
+        * maybe requiresShuffle should go true if we are at deckpen + max number of cards that could be dealt(from remaining cards)
+
 * ability to specify full set of tables for each player
     * counting values
     * betting spreads/ramps
