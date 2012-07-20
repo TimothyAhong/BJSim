@@ -1,26 +1,29 @@
-To Do
-    -comment/read
+#BJSIM
+Simulates BJs
+#TODO
 
-    -ability to specify full set of tables for each player
-        -counting values
-        -betting spreads/ramps
+* comment
 
-    -ability to specify game rules
-        -insurace
-        -surrender
-        -double down
-        -split
+* ability to specify full set of tables for each player
+    * counting values
+    * betting spreads/ramps
 
-    -trial class
-        -multi-threaded tests
-        -run x trials based on preset y (game type, counting schema, etc)
+* ability to specify game rules
+    * insurace
+    * surrender
+    * double down
+    * split
 
-    -file io
-        -use the player log function to write to text file
+* trial class
+    * multi-threaded tests
+    * run x trials based on preset y (game type, counting schema, etc)
 
-    -R(setup scripts for peeps to use)
-        -plotting
-        -distribution identification
-        -do our dist tests to compare schemes/do 1 sided tests to say if they are better than breaking even
+* file io
+    * use the player log function to write to text file
+
+* R(setup scripts for peeps to use)
+    * plotting
+    * distribution identification
+    * do our dist tests to compare schemes/do 1 sided tests to say if they are better than breaking even
 
 
