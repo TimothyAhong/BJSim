@@ -10,13 +10,42 @@ class Player(Human):
         self.count = 0
         self.statistics = {}
         self.resetStatistics()
+        #this id is used to map the setting file to this player
+        self.id = 0
+        self.enable_hand_log = False
+        self.trial_id=0
+        self.game_id=0
+
+    def newShoeStatistics(self):
+        #increment
+        self.statistics['shoe_number']+=1
+        #difference statistics
+        self.statistics['shoe_startingBankroll'] = self.bankroll
+        self.statistics['shoe_startingWins'] = self.statistics['TotalWins']
+        self.statistics['shoe_startingHands'] = self.statistics['TotalWins'] + self.statistics['TotalLosses'] + self.statistics['TotalPushes']
+        #ending ones, this is not needed but safer to zero them
+        self.statistics['shoe_endingWins'] = 0
+        self.statistics['shoe_endingHands'] = 0
+        self.statistics['shoe_endingBankroll'] = 0
+        self.statistics['shoe_totalWagered'] = 0
+        self.statistics['shoe_net'] = 0
+        self.statistics['shoe_percentChange'] = 0
     
     def resetStatistics(self):
+        #shoe based stats
+        self.statistics['shoe_totalWagered'] = 0
+        self.statistics['shoe_net'] = 0
+        self.statistics['shoe_percentChange'] = 0
+        #trial based stats
+        self.statistics['shoe_number'] = 0
         self.statistics["TotalWins"] = 0
         self.statistics["TotalLosses"] = 0
         self.statistics["TotalPushes"] = 0
         self.statistics["Blackjacks"] = 0
+        self.statistics["HandsToRuin"] = 0
+        self.statistics["HandsToDouble"] = 0
         self.statistics["Wins-Faceup:A"] = {}
+        self.statistics["StartingBankroll"] = self.bankroll
         for v in range(2, 11):
             self.statistics["Wins-Faceup:" + str(v)] = {}
         self.statistics["Losses-Faceup:A"] = {}
@@ -28,8 +57,35 @@ class Player(Human):
     
     def getStatistics(self):
         return self.statistics
+
+    def logTrial(self):
+        data = [ self.id, self.game_id, self.bankroll, self.statistics['StartingBankroll'], self.statistics['TotalWins'],self.statistics['TotalLosses'],self.statistics['TotalPushes'],self.statistics['HandsToDouble'],self.statistics['HandsToRuin']]
+        self.exporter.pt(data)
+
+    def logShoe(self):
+        #get difference ending values
+        self.statistics['shoe_endingBankroll']=self.bankroll
+        self.statistics['shoe_endingHands']=self.statistics['TotalWins'] + self.statistics['TotalLosses'] + self.statistics['TotalPushes']
+        self.statistics['shoe_endingWins']=self.statistics['TotalWins']
+
+        #calculated values
+        self.statistics['shoe_net'] = self.statistics['shoe_endingBankroll'] - self.statistics['shoe_startingBankroll']
+        if self.statistics['shoe_startingBankroll']!=0:
+            self.statistics['shoe_percentChange']= self.statistics['shoe_net']/self.statistics['shoe_startingBankroll']
+        else:
+            self.statistics['shoe_percentChange']=0
+        self.statistics['shoe_totalHands'] = self.statistics['shoe_endingHands'] - self.statistics['shoe_startingHands']
+        self.statistics['shoe_totalWins'] = self.statistics['shoe_endingWins'] - self.statistics['shoe_startingWins']
+
+        #export
+        data = [self.id,self.game_id,self.statistics['shoe_totalHands'],self.statistics['shoe_totalWins'],self.statistics['shoe_number'],self.statistics['shoe_totalWagered'],self.statistics['shoe_startingBankroll'],self.statistics['shoe_net'],self.statistics['shoe_percentChange']]
+        self.exporter.s(data)
+
     
     def logRound(self, dealerhand, playerhand, winner):
+        #=change this completely to update the player stats(for use later with the logTrial) and to log the past round
+
+        #update trial based statistics
         faceup = dealerhand.getCard(0)[0]
         if faceup in ['K', 'Q', 'J', 'T']:
             faceup = '10'
@@ -53,8 +109,22 @@ class Player(Human):
                 self.statistics["Losses-Faceup:" + faceup][self.getHandID(Hand(playerhand.toList()[0:2]))] = self.statistics["Losses-Faceup:" + faceup][self.getHandID(Hand(playerhand.toList()[0:2]))] + 1
             except:
                 self.statistics["Losses-Faceup:" + faceup][self.getHandID(Hand(playerhand.toList()[0:2]))] = 1
-    
+        
+        #Ruin and double, these are in the wrong place. They should be right after bets are resolved
+        if self.bankroll >= 2*self.statistics["StartingBankroll"] and self.statistics["HandsToDouble"] == 0:
+            self.statistics["HandsToDouble"] = self.statistics["TotalWins"] + self.statistics["TotalLosses"] + self.statistics["TotalPushes"]
+        if self.bankroll <= 0 and self.statistics["HandsToRuin"] == 0:
+            self.statistics["HandsToRuin"] = self.statistics["TotalWins"] + self.statistics["TotalLosses"] + self.statistics["TotalPushes"]
+        
+        #log this hand
+        #=this is a bad place, seperate record stats and logging
+        if self.enable_hand_log:
+            data = [ self.id, self.game_id,playerhand.getWager(), self.bankroll, self.count, winner, 21]
+            self.exporter.h(data)
+
+
     def resetCount(self):
+        #=use default count value that has to be defined for the player
         self.count = 0
     
     #change so that on init every human is given an array
@@ -68,8 +138,9 @@ class Player(Human):
     def getBankroll(self):
         return self.bankroll
     
-    def setBankroll(self, br):
-        self.bankroll = br
+    def setBankroll(self,bankroll):
+        self.bankroll = bankroll
+        self.statistics["StartingBankroll"] = self.bankroll
     
     def adjustBankroll(self, amount):
         self.bankroll = self.bankroll + amount
@@ -97,11 +168,14 @@ class Player(Human):
     #change this to call the play specific function
     def makeWager(self): #modify this 
         if self.count >= 10 and self.count < 15:
-            return 50
+            wager =  5
         elif self.count >= 15:
-            return 100
+            wager = 10
         else:
-            return 10
+            wager = 1
+
+        self.statistics['shoe_totalWagered']+=wager
+        return wager
     
     #not actually count based but based on on the return of CountID
     def setStrategyByCount(self, count, strategy):

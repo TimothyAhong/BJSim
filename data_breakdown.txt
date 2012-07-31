@@ -1,0 +1,43 @@
+hands(per player) (files per computer per date)
+    -trial id
+    -player id
+    -game id
+    -wager
+    -bankroll
+    -count
+    -outcome
+    -final player card value
+
+
+
+shoes(per player) (files per computer per date)
+    -trial id
+    -player id
+    -game id
+    -hands played
+    -hands won
+    -shoe number (in current trial)
+    -total wagered
+    -bankroll at start of shoe
+    -net gain/loss
+    -percent change
+
+player_trials(per player) (files per computer per date)
+    -trial id
+    -player id
+    -game id
+    -bankroll
+    -starting bankroll
+    -hands won
+    -hands lost
+    -hands pushed
+    -hands until double
+    -hands until ruin
+
+trials (single file)
+    -trial id
+    -start time
+    -duration(s)
+    -decks played
+
+

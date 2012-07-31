@@ -7,6 +7,7 @@ class BlackjackGame:
         self.deckpen = max(0, 1 - dp)
         self.blackjackpayoff = blackjack
         self.dealer = Dealer(numdecks)
+        self.id=0
     
     def getPlayerBankrolls(self): #returns a dictionary of player's bankroll
         rolls = {}
@@ -76,6 +77,7 @@ class BlackjackGame:
             for hand in p.getHands():
                 self.revealHandToCount(hand)
                 winner = self.dealer.evaluateWinner(dealerhand, hand)
+                #logging needs more information?
                 p.logRound(dealerhand, hand, winner)
                 if verbose:
                     if winner > 0: 
@@ -87,6 +89,7 @@ class BlackjackGame:
                         print p.getName() + " loses " + str(hand.getWager())
                     else:
                         print p.getName() + " pushes"
+                    print p.getName()+" has "+str(p.getBankroll())+" left"
                 if winner == 2: #win by blackjack
                     p.adjustBankroll(self.blackjackpayoff*hand.getWager())
                 else:
@@ -109,6 +112,7 @@ class BlackjackGame:
         if verbose:
             print "Number of cards left: " + str(self.dealer.getNumberCardsLeft())
 
+        #place bets and deal cards
         for p in self.players:
             wager = p.makeWager()
             if verbose:
@@ -122,14 +126,16 @@ class BlackjackGame:
 
         if verbose:
             print "Dealer's upcard: " + str(dealerupcard)
+
+        #offer insurance if necessary
         self.dealer.takeCard(dealerupcard)
         self.dealer.takeCard(self.dealer.dealCard())
-
         if dealerupcard[0] == 'A':
             if verbose:
                 print "Ace showing...insurance?"
             self.offerInsurance(verbose=verbose)
-            
+
+        #begin round
         if self.dealer.isBlackjack(self.dealer.getHand()):
             if verbose:
                 print "Dealer has blackjack"
@@ -137,14 +143,17 @@ class BlackjackGame:
         else:
             if verbose:
                 print "Dealer does not have blackjack"
+            #each player plays
             for p in self.players:
                 self.playHand(dealerupcard, p, verbose=verbose)
+            #dealer plays
             while self.dealer.mustHit():
                 if verbose:
                     print "Dealer hits"
                 self.dealer.takeCard(self.dealer.dealCard())
             if verbose:
                 print "Dealer's final hand: " + str(self.dealer.getHand()) + "(" + str(self.dealer.evaluateHand(self.dealer.getHand())) + ")"
+            #chicken dinner?
             self.settleRound(verbose=verbose)
 
 
